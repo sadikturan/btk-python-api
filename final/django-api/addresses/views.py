@@ -1,8 +1,8 @@
 from rest_framework import generics, permissions
 from drf_spectacular.utils import extend_schema, extend_schema_view
-from .serializers import AddressListSerializer, AddressSerializer, AddressDetailsSerializer, AddressSerializer, AddressListSerializer
+from .serializers import AddressListSerializer, CitySerializer, AddressSerializer, AddressDetailsSerializer, AddressSerializer, AddressListSerializer
 from .services import get_user_addresses, set_default_address
-from .models import Address
+from .models import Address, City
 
 @extend_schema_view(
     get=extend_schema(
@@ -142,3 +142,7 @@ class AdminAddressRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView
         if self.request.method == "GET":
             return AddressDetailsSerializer
         return AddressSerializer
+
+class CityListView(generics.ListAPIView):
+    queryset = City.objects.all()
+    serializer_class = CitySerializer

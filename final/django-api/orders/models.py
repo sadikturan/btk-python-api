@@ -9,7 +9,7 @@ ORDER_STATUS_CHOICES = [
     ('pending', 'Pending'),
     ('processing', 'Processing'),
     ('shipped', 'Shipped'),
-    ('completed', 'Completed'),
+    ('delivered', 'Delivered'),
     ('canceled', 'Canceled'),
 ]
 

@@ -27,6 +27,17 @@ class CatalogProductList(generics.ListAPIView):
     ordering_fields = ['price', 'name']
     ordering = ['-id']
 
+@extend_schema(
+    summary="Catalog: Ürün detaylarını ID ile al",
+    description="Verilen ID'ye sahip ürünün detaylarını döner.",
+    tags=['Products'],
+    responses=ProductDetailsSerializer
+)
+class CatalogProductDetailView(generics.RetrieveAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductDetailsSerializer
+    lookup_field = "slug"  # Dersin başında bu satırı silerek aramayı id' e göre yapıyoruz. 
+
 @extend_schema_view(
     get=extend_schema(
         summary="Ürün görsellerini listele",
@@ -79,25 +90,21 @@ class ProductImageDelete(generics.DestroyAPIView):
         return Response({'message': 'Image deleted.'}, status=status.HTTP_204_NO_CONTENT)
 
 @extend_schema(
-    summary="Catalog: Ürün detaylarını ID ile al",
-    description="Verilen ID'ye sahip ürünün detaylarını döner.",
-    tags=['Products'],
-    responses=ProductDetailsSerializer
-)
-class CatalogProductDetailView(generics.RetrieveAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductDetailsSerializer
-
-@extend_schema(
     summary="Admin: Tüm ürünleri listele",
-    description="Yalnızca admin kullanıcıların erişebileceği, tüm ürünleri listeleyen endpoint.",
+    description="Yalnızca admin kullanıcıların erişebileceği, tüm ürünleri listeler ve ayrıca kategory filtresi uygular.",
     tags=['Products'],
     responses=ProductListSerializer(many=True)
 )
 class AdminProductListView(generics.ListAPIView):
-    queryset = Product.objects.all()
     serializer_class = ProductListSerializer
     permission_classes = [IsAdminUser]
+
+    def get_queryset(self):
+        queryset = Product.objects.all()
+        category_id = self.request.query_params.get("category")
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+        return queryset
 
 
 @extend_schema(

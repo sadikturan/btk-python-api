@@ -50,10 +50,10 @@ def create_payment(user, order, card_data):
         raise ValidationError(f'Basket total ({basket_total}) does not match order total ({order_total})')
     
     payment_card = {
-        'cardHolderName': card_data['cardHolderName'],
-        'cardNumber': card_data['cardNumber'],
-        'expireMonth': card_data['expireMonth'],
-        'expireYear': card_data['expireYear'],
+        'cardHolderName': card_data['card_name'],
+        'cardNumber': card_data['card_number'],
+        'expireMonth': card_data['expiry_month'],
+        'expireYear': card_data['expiry_year'],
         'cvc': card_data['cvc'],
         'registerCard': '0'
     }   

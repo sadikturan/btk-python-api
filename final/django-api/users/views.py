@@ -4,8 +4,9 @@ from django.contrib.auth import get_user_model, authenticate
 from drf_spectacular.utils import extend_schema
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer, TokenVerifySerializer
-from .serializer import SignUpSerializer, LoginSerializer
+from .serializer import SignUpSerializer, LoginSerializer, UserAdminSerializer
 from .tokens import get_tokens_for_user
+from rest_framework.permissions import IsAdminUser
 
 User = get_user_model()
 
@@ -37,9 +38,31 @@ class CustomTokenVerifyView(TokenVerifyView):
     summary="Kullanıcı oluştur",
     tags=['Users']
 )
-class SignUpView(generics.CreateAPIView):
+class SignUpView(generics.GenericAPIView):
     queryset = User.objects.all()
     serializer_class = SignUpSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user: User = serializer.save()
+
+        tokens = get_tokens_for_user(user)
+
+        response = {
+                "message": "User created successfull",
+                "token": tokens,
+                "user": {
+                    "id": user.id,
+                    "email": user.email,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "phone": user.phone,
+                    "role": "admin" if user.is_superuser else "user"
+                }
+            }
+        
+        return Response(data=response, status=status.HTTP_201_CREATED)
 
 @extend_schema(
     request=LoginSerializer,
@@ -63,8 +86,41 @@ class LoginView(generics.GenericAPIView):
 
             response = {
                 "message": "Login successfull",
-                "token": tokens
+                "token": tokens,
+                "user": {
+                    "id": user.id,
+                    "email": user.email,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "phone": user.phone,
+                    "role": "admin" if user.is_superuser else "user"
+                }
             }
             return Response(data=response, status=status.HTTP_200_OK)
         else:
             return Response(data={"message":"Invalid email or password"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(
+    request=UserAdminSerializer,
+    summary="Admin Kullanıcı Listesi",
+    tags=['Users']
+)
+class AdminUserListView(generics.ListAPIView):
+    queryset = User.objects.all().order_by("-id")
+    serializer_class = UserAdminSerializer
+    permission_classes = [IsAdminUser]
+
+
+@extend_schema(
+    request=UserAdminSerializer,
+    summary="Admin Kullanıcı Detayı",
+    tags=['Users']
+)
+class AdminUserDetailView(generics.RetrieveUpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserAdminSerializer
+    permission_classes = [IsAdminUser]
+
+
+

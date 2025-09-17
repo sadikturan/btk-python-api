@@ -26,7 +26,10 @@ class AddToCartView(generics.GenericAPIView):
         except ValidationError as e:
             return Response({'error': str(e.detail[0])}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({'message': 'Product added to cart.'}, status=status.HTTP_200_OK)
+        cart = Cart.objects.get(user=request.user)
+        serializer = CartSerializer(cart)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @extend_schema(
@@ -71,10 +74,10 @@ class UpdateCartItemView(generics.GenericAPIView):
         cart_item = get_cart_item_or_404(pk, request.user)
         updated_item = update_cart_item_quantity(cart_item, quantity)
 
-        if updated_item is None:
-            return Response({'message': 'Cart item deleted'}, status=status.HTTP_200_OK)
+        cart = Cart.objects.get(user=request.user)
+        serializer = CartSerializer(cart)
 
-        return Response({'message': 'Cart item updated.'}, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @extend_schema_view(
@@ -92,6 +95,31 @@ class DeleteCartItemView(generics.GenericAPIView):
         try:
             cart_item = CartItem.objects.get(pk=pk, cart__user=request.user)
             cart_item.delete()
-            return Response({'message': 'Cart item deleted.'}, status=status.HTTP_200_OK)
+
+            cart = request.user.cart
+            return Response(
+                CartSerializer(cart, context={"request": request}).data,
+                status=status.HTTP_200_OK
+            )
+
         except CartItem.DoesNotExist:
             raise NotFound('Cart item not found.')
+
+@extend_schema_view(
+    delete=extend_schema(
+        summary="Sepeti Temizle",
+        description="Kullanıcının sepetindeki tüm ürünleri siler ve güncel sepeti döner.",
+        tags=["Carts"]
+    )
+)
+class ClearCartView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = EmptySerializer
+
+    def delete(self, request):
+        cart = request.user.cart
+        cart.items.all().delete() 
+        return Response(
+            CartSerializer(cart, context={"request": request}).data,
+            status=status.HTTP_200_OK
+        )

@@ -10,7 +10,7 @@ from .filters import CommentFilter
 
 @extend_schema(
     summary="Yorumları Listele (Admin)",
-    description="Tüm kullanıcı yorumlarını listelemek için kullanılır. Admin yetkisi gerektirir. Filtreleme ve sayfalama desteklenir.",
+    description="Tüm kullanıcı yorumlarını listelemek için kullanılır. UserId gönderilirse filtre uygulanır. Admin yetkisi gerektirir. Filtreleme ve sayfalama desteklenir.",
     tags=["Comments"],
     responses=CommentSerializer(many=True)
 )
@@ -21,6 +21,13 @@ class AdminCommentList(generics.ListAPIView):
     queryset = Comment.objects.all().order_by('-update')
     filter_backends = [DjangoFilterBackend]
     filterset_class = CommentFilter
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user_id = self.request.query_params.get("userId")
+        if user_id:
+            queryset = queryset.filter(user_id=user_id)
+        return queryset
 
 @extend_schema_view(
     get=extend_schema(

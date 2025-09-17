@@ -1,9 +1,16 @@
 from rest_framework import serializers
 from .models import Comment
+from products.models import Product
 from drf_spectacular.utils import extend_schema_field
+
+class CommentProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ["id", "name", "slug"]
 
 class CommentSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
+    product = CommentProductSerializer(read_only=True)
 
     class Meta:
         model = Comment

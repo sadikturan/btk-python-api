@@ -54,7 +54,8 @@ INSTALLED_APPS = [
     'django_filters',
     'drf_spectacular',
     'corsheaders',
-    'rest_framework_api_key'
+    'rest_framework_api_key',
+    'tinymce'
 ]
 
 MIDDLEWARE = [
@@ -85,15 +86,16 @@ REST_FRAMEWORK = {
         'app.throttles.MaxAnonRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-       'min_anon_request': '5/minute',
-       'max_anon_request': '100/day',       
-       'min_user_request': '10/minute',
-       'max_user_request': '1000/day',
-    }
+       'min_anon_request': '50/minute',
+       'max_anon_request': '1000/day',       
+       'min_user_request': '100/minute',
+       'max_user_request': '5000/day',
+    },
+    # 'EXCEPTION_HANDLER': "core.exceptions.custom_exception_handler",  
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
 

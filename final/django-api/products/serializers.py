@@ -37,11 +37,16 @@ class ProductListSerializer(serializers.ModelSerializer):
         fields = ['id','name','price','stock','slug','category','images']
 
 class ProductDetailsSerializer(serializers.ModelSerializer):
-    comments = CommentSerializer(many=True, read_only=True)
+    comments = serializers.SerializerMethodField()
+    images = ProductImageSerializer(many=True, read_only=True)
     category = CategorySerializer()
     class Meta:
         model = Product
-        fields = ['id','name','description','price','stock','slug','category','comments']
+        fields = ['id','name','description','price','stock','slug','category','images','comments']
+
+    def get_comments(self, obj):
+        queryset = obj.comments.filter(active= True)
+        return CommentSerializer(queryset, many=True).data
 
 class ProductSerializer(serializers.ModelSerializer):
     name = serializers.CharField(max_length=200, validators = [UniqueValidator(queryset=Product.objects.all())])

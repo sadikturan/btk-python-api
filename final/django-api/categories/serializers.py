@@ -31,9 +31,12 @@ class CategorySerializer(serializers.Serializer):
 
     def validate_name(self, value):
         if len(value) < 2:
-            raise serializers.ValidationError("You must enter at least 2 charactes")
+            raise serializers.ValidationError("You must enter at least 2 characters")
         
-        if Category.objects.filter(name=value).exists():
+        qs = Category.objects.filter(name=value)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
             raise serializers.ValidationError("This category name is already in use.")
 
         return value
@@ -56,6 +59,8 @@ class CategorySerializer(serializers.Serializer):
     
     def update(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)
+        instance.icon = validated_data.get('icon', instance.icon)
+        instance.slug = validated_data.get('slug', instance.slug)
         instance.description = validated_data.get('description', instance.description)
         instance.save()
         return instance

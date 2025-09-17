@@ -37,7 +37,8 @@ class OrderCreateView(generics.CreateAPIView):
 
         try:
             order, payment_result = create_order_from_cart(
-                request.user, cart,
+                request.user, 
+                cart,
                 delivery_address_id,
                 billing_address_id,
                 card_data,
@@ -83,9 +84,13 @@ class OrderDetailsView(generics.RetrieveAPIView):
     def get_queryset(self):
         return Order.objects.filter(user = self.request.user)
     
+from rest_framework import generics, permissions
+from .models import Order
+from .serializers import OrderSerializer
+
 @extend_schema(
     summary="Tüm Siparişleri Listele (Admin)",
-    description="Tüm kullanıcıların siparişlerini sıralı şekilde listeler. Sadece admin erişimine açıktır.",
+    description="Tüm kullanıcıların siparişlerini sıralı şekilde listeler. userId parametresi varsa sadece o kullanıcıya ait siparişler listelenir. Sadece admin erişimine açıktır.",
     tags=["Orders"],
     responses=OrderSerializer(many=True),
 )
@@ -94,7 +99,12 @@ class AdminOrderListView(generics.ListAPIView):
     permission_classes = [permissions.IsAdminUser]
 
     def get_queryset(self):
-        return Order.objects.order_by('-created')
+        queryset = Order.objects.order_by('-created')
+        user_id = self.request.query_params.get('userId', None)
+        if user_id:
+            queryset = queryset.filter(user__id=user_id)
+        return queryset
+
     
 @extend_schema(
     summary="Sipariş Detayı (Admin)",

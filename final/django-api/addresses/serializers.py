@@ -12,7 +12,7 @@ class AddressListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Address
-        fields = ['id','full_name','district','city', 'address_type','is_default','user']
+        fields = ['id','full_name','district','city', 'address_type','is_default','user','address_line']
 
 class AddressDetailsSerializer(serializers.ModelSerializer):
     city = serializers.StringRelatedField()
