@@ -25,9 +25,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-e72qo7qbbucs%7&^__!%2ul=_g2n9!d5+zp^2-tv6$$(hegj*='
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['btkdjango.pythonanywhere.com']
 
 
 # Application definition
@@ -77,7 +77,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         # 'core.permissions.HasValidAPIKey'
-    ],     
+    ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_THROTTLE_CLASSES': [
         'app.throttles.MinUserRateThrottle',
@@ -87,11 +87,11 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_THROTTLE_RATES': {
        'min_anon_request': '50/minute',
-       'max_anon_request': '1000/day',       
+       'max_anon_request': '1000/day',
        'min_user_request': '100/minute',
        'max_user_request': '5000/day',
     },
-    # 'EXCEPTION_HANDLER': "core.exceptions.custom_exception_handler",  
+    # 'EXCEPTION_HANDLER': "core.exceptions.custom_exception_handler",
 }
 
 SIMPLE_JWT = {
@@ -162,7 +162,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -177,7 +177,10 @@ IYZICO_BASE_URL = "sandbox-api.iyzipay.com"
 
 # Uploads
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = BASE_DIR / 'media'
+
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # API Docs
 SPECTACULAR_SETTINGS = {
